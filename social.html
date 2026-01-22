@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Omni's Content Creator | LinkedIn Simulator</title>
+  <style>
+    :root {
+      --li-blue: #0a66c2;
+      --li-bg: #f3f2ef;
+      --li-border: #e0e0e0;
+      --li-text-main: rgba(0,0,0,0.9);
+      --li-text-sub: rgba(0,0,0,0.6);
+      --accent: #057642;
+      --processing-gradient: linear-gradient(135deg, #0a66c2, #057642, #5e3db3);
+      --processing-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Fira Sans", Ubuntu, Oxygen, "Oxygen Sans", Cantarell, "Droid Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Lucida Grande", Helvetica, Arial, sans-serif;
+      background: var(--li-bg);
+      color: var(--li-text-main);
+    }
+
+    /* Top Nav Branding */
+    .nav-bar {
+      height: 52px;
+      background: #fff;
+      border-bottom: 1px solid var(--li-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15%;
+    }
+
+    .nav-left { display: flex; align-items: center; gap: 15px; }
+    
+    .nav-logo {
+      color: var(--li-blue);
+      font-size: 24px;
+      font-weight: bold;
+      text-decoration: none;
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .brand-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--li-text-main);
+      letter-spacing: -0.5px;
+    }
+
+    .main-layout {
+      max-width: 1128px;
+      margin: 25px auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 25px;
+      padding: 0 20px;
+      position: relative;
+    }
+
+    /* Left Panel: Controls */
+    .editor-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--li-border);
+      padding: 0;
+      height: fit-content;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .card-title {
+      padding: 15px;
+      font-size: 14px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--li-border);
+      background: #fafafa;
+    }
+
+    .editor-padding { padding: 20px; }
+
+    .textarea {
+      width: 100%;
+      height: 140px;
+      padding: 12px;
+      border: 1px solid var(--li-border);
+      border-radius: 8px;
+      resize: none;
+      font-size: 14px;
+      box-sizing: border-box;
+      margin-bottom: 15px;
+      background: #f9f9f9;
+      transition: all 0.3s ease;
+    }
+
+    .textarea:focus {
+      outline: 2px solid var(--li-blue);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(10, 102, 194, 0.1);
+    }
+
+    .control-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: var(--li-text-sub);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px 24px;
+      border-radius: 1600px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .btn-primary { 
+      background: var(--li-blue); 
+      color: #fff;
+      box-shadow: 0 2px 4px rgba(10, 102, 194, 0.2);
+    }
+    .btn-primary:hover { 
+      background: #004182;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(10, 102, 194, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--li-blue);
+      color: var(--li-blue);
+    }
+
+    .btn-outline:hover { 
+      background: rgba(10, 102, 194, 0.05);
+      transform: translateY(-2px);
+    }
+
+    /* Tech Credits */
+    .credits-box {
+      margin-top: 20px;
+      padding: 15px;
+      font-size: 11px;
+      color: var(--li-text-sub);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .credits-box strong { color: var(--li-blue); }
+
+    /* Right Panel: Preview */
+    .feed-item {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--li-border);
+      margin-bottom: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .simulator-label {
+      background: #fdf2f2;
+      color: #c00;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 12px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--li-border);
+    }
+
+    .post-header {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .avatar-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #eee;
+      object-fit: cover;
+    }
+
+    .user-info .name { font-weight: 600; font-size: 14px; display: block; }
+    .user-info .headline { font-size: 12px; color: var(--li-text-sub); display: block; }
+
+    .post-body {
+      padding: 0 16px 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .post-image-container {
+      width: 100%;
+      background: #f3f2ef;
+      border-top: 1px solid var(--li-border);
+      display: none;
+      justify-content: center;
+    }
+
+    .post-image-container img { 
+      max-width: 100%; 
+      height: auto; 
+      display: block;
+      max-height: 400px;
+      object-fit: contain;
+    }
+
+    .post-actions {
+      padding: 4px 12px;
+      border-top: 1px solid var(--li-border);
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .action-btn {
+      padding: 10px;
+      color: var(--li-text-sub);
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .action-btn:hover {
+      color: var(--li-blue);
+    }
+
+    .highlight { color: var(--li-blue); font-weight: 600; }
+
+    /* Advanced Processing Overlay */
+    .processing-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--processing-bg);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .processing-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .processing-overlay.active ~ .main-layout {
+      filter: blur(4px);
+      pointer-events: none;
+    }
+
+    .processing-overlay.active ~ .nav-bar {
+      filter: blur(4px);
+      pointer-events: none;
+    }
+
+    .processing-container {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      padding: 40px;
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+      border: 1px solid rgba(10, 102, 194, 0.1);
+    }
+
+    .processing-header {
+      margin-bottom: 30px;
+    }
+
+    .processing-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--li-text-main);
+      margin-bottom: 10px;
+      background: var(--processing-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .processing-subtitle {
+      font-size: 14px;
+      color: var(--li-text-sub);
+    }
+
+    /* Advanced Progress Bar - FIXED */
+    .progress-bar-container {
+      width: 100%;
+      height: 120px;
+      position: relative;
+      margin: 30px 0;
+    }
+
+    .progress-bar-track {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 8px;
+      background: #eef3f8;
+      border-radius: 4px;
+      transform: translateY(-50%);
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: var(--processing-gradient);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.6),
+        transparent
+      );
+      animation: shimmer 2s infinite;
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .progress-step {
+      position: relative;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: #fff;
+      border: 3px solid #eef3f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--li-text-sub);
+      z-index: 2;
+      transition: all 0.3s ease;
+      transform: translateY(-50%);
+      top: 50%;
+    }
+
+    .progress-step.active {
+      border-color: var(--li-blue);
+      background: var(--li-blue);
+      color: white;
+      transform: translateY(-50%) scale(1.2);
+      box-shadow: 0 0 0 4px rgba(10, 102, 194, 0.2);
+    }
+
+    .progress-step.completed {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: white;
+    }
+
+    /* FIXED: Proper step labels layout */
+    .step-labels-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+    }
+
+    .step-label-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 20%;
+      position: relative;
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--li-text-sub);
+      text-align: center;
+      white-space: nowrap;
+      margin-top: 30px;
+      padding: 0 5px;
+      width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .step-label.active {
+      color: var(--li-blue);
+      font-weight: 700;
+    }
+
+    /* Processing Animation */
+    .processing-animation {
+      margin: 30px auto;
+      width: 80px;
+      height: 80px;
+      position: relative;
+    }
+
+    .processing-circle {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid transparent;
+      border-top-color: var(--li-blue);
+      animation: spin 1.2s linear infinite;
+    }
+
+    .processing-circle:nth-child(2) {
+      width: 70%;
+      height: 70%;
+      top: 15%;
+      left: 15%;
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite reverse;
+    }
+
+    .processing-circle:nth-child(3) {
+      width: 40%;
+      height: 40%;
+      top: 30%;
+      left: 30%;
+      border-top-color: #5e3db3;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* Status Messages */
+    .status-message {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--li-text-main);
+      margin: 20px 0;
+      min-height: 24px;
+    }
+
+    .status-detail {
+      font-size: 12px;
+      color: var(--li-text-sub);
+      margin-top: 5px;
+      min-height: 18px;
+    }
+
+    /* Fun Elements */
+    .fun-element {
+      margin-top: 30px;
+      font-size: 12px;
+      color: var(--li-text-sub);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .fun-icon {
+      font-size: 16px;
+      animation: bounce 2s infinite;
+    }
+
+    .loading-dots {
+      display: inline-block;
+      margin-left: 5px;
+    }
+
+    .loading-dots span {
+      animation: blink 1.4s infinite both;
+      font-size: 18px;
+    }
+
+    .loading-dots span:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .loading-dots span:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    /* Animations */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+      
+      .processing-container {
+        padding: 30px 20px;
+        width: 95%;
+      }
+      
+      .step-label {
+        font-size: 10px;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.2;
+      }
+    }
+    
+    @media (max-width: 600px) {
+      .step-label {
+        font-size: 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="nav-bar">
+  <div class="nav-left">
+    <div class="nav-logo">in</div>
+    <div class="brand-name">Omni's Content Creator</div>
+  </div>
+  <div style="font-size: 12px; color: var(--li-text-sub); font-weight: 600;">
+    LinkedIn Simulator v2.0
+  </div>
+</div>
+
+<!-- Advanced Processing Overlay -->
+<div class="processing-overlay" id="processingOverlay">
+  <div class="processing-container">
+    <div class="processing-header">
+      <h2 class="processing-title">Omni's Engine</h2>
+      <p class="processing-subtitle">Creating amazing content for LinkedIn</p>
+    </div>
+    
+    <div class="processing-animation">
+      <div class="processing-circle"></div>
+      <div class="processing-circle"></div>
+      <div class="processing-circle"></div>
+    </div>
+    
+    <div class="progress-bar-container">
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progressFill"></div>
+      </div>
+      
+      <div class="progress-steps">
+        <div class="progress-step" id="step1">1</div>
+        <div class="progress-step" id="step2">2</div>
+        <div class="progress-step" id="step3">3</div>
+        <div class="progress-step" id="step4">4</div>
+        <div class="progress-step" id="step5">5</div>
+      </div>
+      
+      <!-- FIXED: Proper labels layout -->
+      <div class="step-labels-container">
+        <div class="step-label-wrapper">
+          <div class="step-label" id="label1">Analyzing</div>
+        </div>
+        <div class="step-label-wrapper">
+          <div class="step-label" id="label2">Crafting</div>
+        </div>
+        <div class="step-label-wrapper">
+          <div class="step-label" id="label3">Optimizing</div>
+        </div>
+        <div class="step-label-wrapper">
+          <div class="step-label" id="label4">Designing</div>
+        </div>
+        <div class="step-label-wrapper">
+          <div class="step-label" id="label5">Finalizing</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="status-message" id="statusMessage">Initializing content generation engine...</div>
+    <div class="status-detail" id="statusDetail">Preparing AI models and algorithms</div>
+    
+    <div class="fun-element">
+      <span class="fun-icon">⚡</span>
+      <span>Powered by advanced AI systems</span>
+      <span class="loading-dots">
+        <span>.</span><span>.</span><span>.</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <aside>
+    <div class="editor-card">
+      <div class="card-title">Content Engine</div>
+      <div class="editor-padding">
+        <textarea id="brief" class="textarea" placeholder="Enter your topic or brief..."></textarea>
+
+        <div class="control-row">
+          <input type="checkbox" id="wantImage" checked>
+          <label for="wantImage">Generate Custom Media</label>
+        </div>
+
+        <button id="generateBtn" class="btn btn-primary">Generate Post</button>
+        <button id="copyBtn" class="btn btn-outline">Copy Full Post</button>
+        <button id="downloadBtn" class="btn btn-outline">Download Media</button>
+      </div>
+    </div>
+
+    <div class="credits-box">
+      Powered by<br>
+      <strong>n8n</strong> Automation &bull; <strong>Horde AI</strong><br>
+      <strong>Open Router</strong> Intelligence
+    </div>
+  </aside>
+
+  <main>
+    <div class="feed-item">
+      <div class="simulator-label">LinkedIn Simulator Preview</div>
+      <div class="post-header">
+        <img src="image1.png" class="avatar-circle" id="profilePic">
+        <div class="user-info">
+          <span class="name">Michael</span>
+          <span class="headline">AI Engineer • Automation Specialist</span>
+        </div>
+      </div>
+
+      <div class="post-body" id="postContent">
+        Your generated content will appear here...
+      </div>
+
+      <div class="post-image-container" id="imageContainer">
+        <img id="postImg" src="" alt="AI Generated Content">
+      </div>
+
+      <div class="post-actions">
+        <div class="action-btn">👍 Like</div>
+        <div class="action-btn">💬 Comment</div>
+        <div class="action-btn">🔁 Repost</div>
+        <div class="action-btn">✈️ Send</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const generateBtn = document.getElementById("generateBtn");
+  const copyBtn = document.getElementById("copyBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const postContent = document.getElementById("postContent");
+  const imageContainer = document.getElementById("imageContainer");
+  const postImg = document.getElementById("postImg");
+  const wantImage = document.getElementById("wantImage");
+  
+  // Processing overlay elements
+  const processingOverlay = document.getElementById("processingOverlay");
+  const progressFill = document.getElementById("progressFill");
+  const statusMessage = document.getElementById("statusMessage");
+  const statusDetail = document.getElementById("statusDetail");
+  
+  // Progress steps
+  const steps = [1, 2, 3, 4, 5];
+  const stepElements = steps.map(i => document.getElementById(`step${i}`));
+  const labelElements = steps.map(i => document.getElementById(`label${i}`));
+  
+  // Fun status messages
+  const statusMessages = [
+    { main: "Analyzing your brief...", detail: "Extracting key concepts and themes" },
+    { main: "Crafting compelling content...", detail: "Writing with persuasive language" },
+    { main: "Optimizing for LinkedIn...", detail: "Adding hashtags and engagement triggers" },
+    { main: "Generating visual elements...", detail: "Creating custom graphics with AI" },
+    { main: "Finalizing your post...", detail: "Applying finishing touches" }
+  ];
+  
+  const funFacts = [
+    "Did you know? Posts with images get 2x more engagement!",
+    "LinkedIn posts with 5-10 hashtags perform best!",
+    "The best time to post is 9 AM on Wednesdays!",
+    "Posts that ask questions get more comments!",
+    "Using emojis can increase engagement by 25%!"
+  ];
+
+  let rawGeneratedText = "";
+  let imageUrl = "";
+  let progressInterval;
+
+  function cleanContent(text) {
+    return text.replace(/[*\\—\-]/g, "").trim();
+  }
+
+  function updateProgress(currentStep, totalSteps = 5) {
+    // Update progress bar
+    const progressPercent = (currentStep / totalSteps) * 100;
+    progressFill.style.width = `${progressPercent}%`;
+    
+    // Update steps
+    stepElements.forEach((step, index) => {
+      if (index < currentStep) {
+        step.classList.add("completed");
+        step.classList.remove("active");
+      } else if (index === currentStep - 1) {
+        step.classList.add("active");
+        step.classList.remove("completed");
+      } else {
+        step.classList.remove("active", "completed");
+      }
+    });
+    
+    // Update labels
+    labelElements.forEach((label, index) => {
+      if (index === currentStep - 1) {
+        label.classList.add("active");
+      } else {
+        label.classList.remove("active");
+      }
+    });
+    
+    // Update status messages
+    if (currentStep <= statusMessages.length) {
+      const status = statusMessages[currentStep - 1];
+      statusMessage.textContent = status.main;
+      statusDetail.textContent = status.detail;
+    }
+  }
+
+  function simulateProgress() {
+    let currentStep = 0;
+    
+    // Reset all steps
+    stepElements.forEach(step => {
+      step.classList.remove("active", "completed");
+    });
+    
+    labelElements.forEach(label => {
+      label.classList.remove("active");
+    });
+    
+    progressInterval = setInterval(() => {
+      currentStep++;
+      updateProgress(currentStep);
+      
+      if (currentStep >= 5) {
+        // Loop back to step 1 but keep step 5 completed
+        setTimeout(() => {
+          updateProgress(5);
+          statusMessage.textContent = "Finalizing your post...";
+          statusDetail.textContent = "Almost ready!";
+        }, 1000);
+      }
+    }, 1200);
+  }
+
+  generateBtn.addEventListener("click", async () => {
+    const brief = document.getElementById("brief").value.trim();
+    if (!brief) return alert("Please enter a brief.");
+    
+    // Show advanced processing overlay
+    processingOverlay.classList.add("active");
+    generateBtn.disabled = true;
+    
+    // Start progress simulation
+    simulateProgress();
+    
+    // Add a random fun fact
+    setTimeout(() => {
+      const randomFact = funFacts[Math.floor(Math.random() * funFacts.length)];
+      statusDetail.textContent = randomFact;
+    }, 3000);
+
+    try {
+      const res = await fetch("https://loveofn8n.app.n8n.cloud/webhook/post", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ brief, wantImage: wantImage.checked })
+      });
+
+      const data = await res.json();
+      
+      // Complete progress simulation
+      clearInterval(progressInterval);
+      updateProgress(5);
+      statusMessage.textContent = "Content Generated Successfully!";
+      statusDetail.textContent = "Your LinkedIn post is ready!";
+      
+      // Wait a moment before hiding overlay
+      setTimeout(() => {
+        processingOverlay.classList.remove("active");
+        generateBtn.disabled = false;
+      }, 5000);
+      
+      const cleanedBody = cleanContent(data.post);
+      const cleanedHashtags = data.hashtags ? data.hashtags.map(h => cleanContent(h)).join(" ") : "";
+      
+      rawGeneratedText = `${cleanedBody}\n\n${cleanedHashtags}`;
+      postContent.innerHTML = `${cleanedBody}<br><br><span class="highlight">${cleanedHashtags}</span>`;
+
+      if (data.url) {
+        imageUrl = data.url;
+        postImg.src = data.url;
+        imageContainer.style.display = "flex";
+      } else {
+        imageContainer.style.display = "none";
+      }
+
+    } catch (err) {
+      console.error(err);
+      
+      // Update overlay to show error
+      clearInterval(progressInterval);
+      statusMessage.textContent = "System Busy";
+      statusDetail.textContent = "Please try again in a moment";
+      
+      // Wait a moment before hiding overlay
+      setTimeout(() => {
+        processingOverlay.classList.remove("active");
+        generateBtn.disabled = false;
+        alert("System Busy. Please try again.");
+      }, 2000);
+    }
+  });
+
+  copyBtn.addEventListener("click", () => {
+    if (!rawGeneratedText) return alert("No content generated.");
+    navigator.clipboard.writeText(rawGeneratedText);
+    
+    // Show a quick confirmation
+    const originalText = copyBtn.textContent;
+    copyBtn.textContent = "✓ Copied!";
+    setTimeout(() => {
+      copyBtn.textContent = originalText;
+    }, 2000);
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    if (!imageUrl) return alert("No image to download.");
+    const link = document.createElement("a");
+    link.href = imageUrl;
+    link.download = "omni_creator_post.png";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Show a quick confirmation
+    const originalText = downloadBtn.textContent;
+    downloadBtn.textContent = "✓ Downloaded!";
+    setTimeout(() => {
+      downloadBtn.textContent = originalText;
+    }, 2000);
+  });
+</script>
+
+</body>
+</html>
